@@ -21,8 +21,6 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.transaction.Transactional;
 import java.io.*;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -55,13 +53,13 @@ public class AuditServicesImp implements AuditServices{
             while (System.currentTimeMillis() < end) {
 
                 String url = "https://api.apilayer.com/exchangerates_data/" + exchangeDetails.getDate() +
-                        "?symbols=USD&base=" + country;
+                        "?symbols=" + country + "&base=USD";
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Content-Type", "application/json");
                 headers.set("apikey", "dfehaCM5GreNMoNvNlezawMb07bB8c0m");
                 ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), JsonNode.class);
-                Double rate = response.getBody().get("rates").get("USD").asDouble();
+                Double rate = response.getBody().get("rates").get(country).asDouble();
                 ratesExchange.setBase_Curency(country);
                 ratesExchange.setConversion_Curency("USD");
                 ratesExchange.setRate(rate);
