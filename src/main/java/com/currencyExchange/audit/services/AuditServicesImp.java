@@ -21,6 +21,8 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.transaction.Transactional;
 import java.io.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -48,27 +50,24 @@ public class AuditServicesImp implements AuditServices{
             audit.setUpdatedTime(Date.from(date.toInstant()));
             audit.setCreatedTime(Date.from(date.toInstant()));
             createAudit(audit);
-            long start = System.currentTimeMillis();
-            long end = start + 3 * 1000;
-            while (System.currentTimeMillis() < end) {
 
-                String url = "https://api.apilayer.com/exchangerates_data/" + exchangeDetails.getDate() +
+
+            String url = "https://api.apilayer.com/exchangerates_data/" + exchangeDetails.getDate() +
                         "?symbols=" + country + "&base=USD";
 
-                HttpHeaders headers = new HttpHeaders();
-                headers.set("Content-Type", "application/json");
-                headers.set("apikey", "dfehaCM5GreNMoNvNlezawMb07bB8c0m");
-                ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), JsonNode.class);
-                Double rate = response.getBody().get("rates").get(country).asDouble();
-                ratesExchange.setBase_Curency(country);
-                ratesExchange.setConversion_Curency("USD");
-                ratesExchange.setRate(rate);
-                ratesExchange.setTimeStamp(Date.from(date.toInstant()));
-                rDESet.add(ratesExchange);
-                audit.setStatus("Reponse_Completed");
-                updateAudit(audit);
-                exhangeRateMap.put(country, rate);
-            }
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Content-Type", "application/json");
+            headers.set("apikey", "SJW0mzddzbbi5YoPdEC8hHinZEl0da7X");
+            ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), JsonNode.class);
+            Double rate = response.getBody().get("rates").get(country).asDouble();
+            ratesExchange.setBase_Curency(country);
+            ratesExchange.setConversion_Curency("USD");
+            ratesExchange.setRate(rate);
+            ratesExchange.setTimeStamp(Date.from(date.toInstant()));
+            rDESet.add(ratesExchange);
+            audit.setStatus("Reponse_Completed");
+            updateAudit(audit);
+            exhangeRateMap.put(country, rate);
         }
         writeExcel(rDESet);
         return exhangeRateMap;
@@ -123,4 +122,35 @@ public class AuditServicesImp implements AuditServices{
             workbook.close();
         }
     }
+
+
+    @Override
+    public List<Audit> getAllAudit() {
+        return this.auditReposistory.findAll();
+    }
+
+    @Override
+    public List<RatesExchangeDetails> getAllRatesExchangeDetails() throws IOException, ParseException {
+        Workbook workbook = new XSSFWorkbook(new FileInputStream("Currency_Exchange_Details.xlsx"));
+        Sheet sheet = workbook.getSheetAt(0);
+        List<RatesExchangeDetails> ratesExchangeDetailsList = new ArrayList<RatesExchangeDetails>();
+        int i = 0;
+        for(Row row : sheet){
+            if(i == 0){
+                i = 1;
+            }
+            else {
+                SimpleDateFormat formatter=new SimpleDateFormat("E MMM dd hh:mm:ss z yyyy");
+                Date date = formatter.parse(row.getCell(3).toString());
+                RatesExchangeDetails rde = new RatesExchangeDetails();
+                rde.setBase_Curency(row.getCell(0).getStringCellValue());
+                rde.setConversion_Curency(row.getCell(1).getStringCellValue());
+                rde.setRate(row.getCell(2).getNumericCellValue());
+                rde.setTimeStamp(date);
+                ratesExchangeDetailsList.add(rde);
+            }
+        }
+        return ratesExchangeDetailsList;
+    }
+
 }

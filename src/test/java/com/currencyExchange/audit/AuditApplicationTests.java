@@ -1,6 +1,7 @@
 package com.currencyExchange.audit;
 
 import com.currencyExchange.audit.models.ExchangeDetails;
+import com.currencyExchange.audit.models.RatesExchangeDetails;
 import com.currencyExchange.audit.services.AuditServices;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -17,9 +18,10 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @SpringBootTest
 class AuditApplicationTests {
@@ -186,5 +188,31 @@ class AuditApplicationTests {
 		FileOutputStream outputStream = new FileOutputStream(fileLocation);
 		workbook.write(outputStream);
 		workbook.close();
+	}
+
+	@Test
+	void readExcel() throws IOException, ParseException {
+		Workbook workbook = new XSSFWorkbook(new FileInputStream("Currency_Exchange_Details.xlsx"));
+		Sheet sheet = workbook.getSheetAt(0);
+		List<RatesExchangeDetails> li = new ArrayList<RatesExchangeDetails>();
+		int i = 0;
+		for(Row row : sheet){
+			if(i == 0){
+				i = 1;
+			}
+			else {
+				SimpleDateFormat formatter=new SimpleDateFormat("E MMM dd hh:mm:ss z yyyy");
+				Date date = formatter.parse(row.getCell(3).toString());
+				RatesExchangeDetails rde = new RatesExchangeDetails();
+				rde.setBase_Curency(row.getCell(0).getStringCellValue());
+				rde.setConversion_Curency(row.getCell(1).getStringCellValue());
+				rde.setRate(row.getCell(2).getNumericCellValue());
+				rde.setTimeStamp(date);
+				li.add(rde);
+			}
+		}
+		for (RatesExchangeDetails rde: li) {
+			System.out.println(rde.getRate());
+		}
 	}
 }
