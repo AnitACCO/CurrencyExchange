@@ -1,0 +1,40 @@
+
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '2.7.9-SNAPSHOT'
+	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+
+}
+
+group = 'com.currencyExchange'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+	maven { url 'https://repo.spring.io/milestone' }
+	maven { url 'https://repo.spring.io/snapshot' }
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+	runtimeOnly 'com.microsoft.sqlserver:mssql-jdbc'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation group: 'org.apache.poi', name: 'poi', version: '5.2.0'
+	implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '5.2.0'
+
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
