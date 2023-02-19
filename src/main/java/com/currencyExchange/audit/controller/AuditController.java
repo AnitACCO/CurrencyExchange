@@ -6,10 +6,7 @@ import com.currencyExchange.audit.models.RatesExchangeDetails;
 import com.currencyExchange.audit.services.AuditServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -23,7 +20,7 @@ public class AuditController {
     @Autowired
     private AuditServices auditservices;
 
-    @GetMapping("/exchangeRate")
+    @PostMapping("/exchangeRate")
     private Map<String, Double> getExchangeRates(@RequestBody ExchangeDetails exchangeDetails) throws IOException {
         if(exchangeDetails.getDate() == null ){
             exchangeDetails.setDate(String.valueOf(java.time.LocalDate.now()));
