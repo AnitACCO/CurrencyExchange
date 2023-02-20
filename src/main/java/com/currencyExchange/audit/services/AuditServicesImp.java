@@ -38,18 +38,14 @@ public class AuditServicesImp implements AuditServices{
         return new RestTemplate();
     }
     @Override
-    public Map<String,Double> FetchAllExchangeRates(ExchangeDetails exchangeDetails) throws IOException {
+    public Map<String,Double> fetchAllExchangeRates(ExchangeDetails exchangeDetails) throws IOException {
         Map<String, Double> exhangeRateMap = new HashMap<String, Double>();
         TreeSet<RatesExchangeDetails> rDESet = new TreeSet<RatesExchangeDetails>();
         for (String country : exchangeDetails.getCountries()) {
             RatesExchangeDetails ratesExchange = new RatesExchangeDetails();
             Audit audit = new Audit();
-            audit.setStatus("Request_Recieved");
-            audit.setRequest(country + "-USD");
             Date date = new Date();
-            audit.setUpdatedTime(Date.from(date.toInstant()));
-            audit.setCreatedTime(Date.from(date.toInstant()));
-            createAudit(audit);
+            createAudit(audit, country);
 
 
             String url = "https://api.apilayer.com/exchangerates_data/" + exchangeDetails.getDate() +
@@ -65,7 +61,6 @@ public class AuditServicesImp implements AuditServices{
             ratesExchange.setRate(rate);
             ratesExchange.setTimeStamp(Date.from(date.toInstant()));
             rDESet.add(ratesExchange);
-            audit.setStatus("Reponse_Completed");
             updateAudit(audit);
             exhangeRateMap.put(country, rate);
         }
@@ -74,7 +69,13 @@ public class AuditServicesImp implements AuditServices{
     }
 
     @Override
-    public Audit createAudit(Audit audit) {
+    public Audit createAudit(Audit audit, String country) {
+        audit.setStatus("Request_Recieved");
+        audit.setRequest(country + "-USD");
+        Date date = new Date();
+        audit.setUpdatedTime(Date.from(date.toInstant()));
+        audit.setCreatedTime(Date.from(date.toInstant()));
+
         return this.auditReposistory.save(audit);
     }
 
@@ -83,7 +84,7 @@ public class AuditServicesImp implements AuditServices{
         Optional<Audit> auditObj = this.auditReposistory.findById(audit.getRequestId());
         if(auditObj.isPresent()){
             Audit auditUpdate = auditObj.get();
-            auditUpdate.setStatus(audit.getStatus());
+            auditUpdate.setStatus("Reponse_Completed");
             Date date = new Date();
             auditUpdate.setUpdatedTime(Date.from(date.toInstant()));
             return this.auditReposistory.save(auditUpdate);
@@ -152,5 +153,19 @@ public class AuditServicesImp implements AuditServices{
         }
         return ratesExchangeDetailsList;
     }
+
+    @Override
+    public Double fetchAllExchangeRate(String date,String country) throws IOException{
+        String url = "https://api.apilayer.com/exchangerates_data/" + date +
+                "?symbols=" + country + "&base=USD";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/json");
+        headers.set("apikey", "SJW0mzddzbbi5YoPdEC8hHinZEl0da7X");
+        ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), JsonNode.class);
+        Double rate = response.getBody().get("rates").get(country).asDouble();
+        return rate;
+    }
+
 
 }

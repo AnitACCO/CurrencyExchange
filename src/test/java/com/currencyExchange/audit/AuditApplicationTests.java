@@ -67,7 +67,7 @@ class AuditApplicationTests {
 		ExchangeDetails exchangeDetails = new ExchangeDetails();
 		exchangeDetails.setDate("2022-01-01");
 		exchangeDetails.setCountries(countries);
-		System.out.println(auditServices.FetchAllExchangeRates(exchangeDetails));
+		System.out.println(auditServices.fetchAllExchangeRates(exchangeDetails));
 	}
 
 	@Test

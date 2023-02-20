@@ -11,11 +11,13 @@ import java.util.Map;
 import java.util.TreeSet;
 
 public interface AuditServices {
-    public Map<String,Double> FetchAllExchangeRates(ExchangeDetails exchangeDetails) throws IOException;
+    public Map<String,Double> fetchAllExchangeRates(ExchangeDetails exchangeDetails) throws IOException;
 
-    Audit createAudit(Audit audit);
+    Audit createAudit(Audit audit, String country);
     Audit updateAudit(Audit audit);
     public void writeExcel(TreeSet<RatesExchangeDetails> rDESet) throws IOException;
     public List<RatesExchangeDetails> getAllRatesExchangeDetails() throws IOException, ParseException;
     public List<Audit> getAllAudit();
+    public Double fetchAllExchangeRate(String date,String country) throws IOException;
+
 }
